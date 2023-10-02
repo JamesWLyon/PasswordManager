@@ -1,1 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <!-- The website favicon -->
+        <link rel="icon" href="https://i.imgur.com/oRGNiKD.png" type="image/x-icon">
+        <title>Password Manager</title>
 
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font: 16px 'Arial';
+                cursor: default;
+                background-color: black;
+            }
+
+            input[type=search] {
+                border: none;
+            }
+
+            input[type=search]:focus {
+                outline: none;
+            }
+
+            input[type=button]:hover {
+                cursor: pointer;
+            }
+
+            #search-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                width: 100vw;
+                height: 30px;
+                padding: 15px 0px .7px 10px;
+                background-color: rgb(0, 0, 0);
+            }
+
+            #search {
+                width: 200px;
+                height: 100%;
+                margin-left: 15px;
+                margin-right: 10px;
+                padding-left: 5px;
+            }
+
+            #add-pswd {
+                width: 260px;
+                height: 30px;
+                overflow: hidden;
+                text-align: center;
+                color: black;
+                background-color: white;
+            }
+
+            #add-pswd:hover {height: 208px;}
+
+            #add-pswd-txt {
+                display: block;
+                height: 30px;
+                line-height: 30px;
+            }
+
+            #add-pswd-txt:hover {cursor: pointer;}
+
+            #search-bar li {
+                list-style: none;
+            }
+
+            #add-pswd input[type=search] {
+                padding: 5px;
+                margin-top: 2px;
+                margin-bottom: 2px;
+                color: white;
+                background-color: black;
+            }
+
+            #the-location, #the-user-name {
+                width: 90%;
+            }
+
+            #the-pswd {
+                width: 64%;
+            }
+
+            #add-pswd ul {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            #add-pswd ul li {
+                width: 100%;
+            }
+
+            #add-pswd a {
+                position: relative;
+                top: 1.1px;
+                padding: 3.7px;
+                text-decoration: none;
+                color: rgb(158, 98, 113);
+                background-color: rgb(37, 37, 37);
+            }
+
+            #add-pswd em {
+                display: block;
+                padding: 4px 0px 5px 0px;
+            }
+
+            #pswd-range {
+                width: 90%;
+                margin-bottom: 10px;
+            }
+
+            #add-pswd input[type=button] {
+                width: 90%;
+                padding: 5px;
+                border: none;
+                color: rgb(158, 98, 113);
+                background-color: rgb(37, 37, 37);
+            }
+
+            #pswd-list {
+                position: relative;
+                top: 65px;
+                padding-bottom: 10px;
+                margin-left: 10px;
+                color: white;
+            }
+
+            #pswd-list li {
+                list-style: none;
+            }
+
+            .pswd-info {
+                margin-left: 15px;
+                margin-bottom: 20px;
+                color: white;
+            }
+
+            .pswd-info input[type=button] {
+                border: none;
+                padding: 3px;
+                margin-top: 5px;
+                border-radius: 2px;
+            }
+        </style>
+    </head>
+    <body onload="LoadPage(); PswdLength();">
+        <!-- This is where passwords will be visualy displayed -->
+        <ul id="pswd-list"></ul>
+
+        <div id="wrapper">
+            <div id="search-bar">
+                <input id="search" type="search" placeholder="Search the passwords..." oninput="Search();">
+                <li id="add-pswd"><span id="add-pswd-txt">Create Password</span>
+                <ul>
+                    <li class="sub-itm"><input id="the-location" type="search" placeholder="Password location..."></li>
+                    <li class="sub-itm"><input id="the-user-name" type="search" placeholder="Enter user name..."></li>
+                    <li class="sub-itm"><input id="the-pswd" type="search" placeholder="Enter password..."><a href="javascript: GenerateRandom();">Random</a></li>
+                    <li class="sub-itm"><em>Password Length = <span id="pswd-length"></span></em></li>
+                    <li class="sub-itm"><input id="pswd-range" type="range" value="30" min="20" max="100" oninput="PswdLength();"></li>
+                    <li class="sub-itm"><input type="button" value="Add Password" onclick="AddPswd();"></li>
+                </ul>
+                </li>
+            </div>
+        </div>
+        <script type="text/javascript">
+            // This function loads stuff in the webpage, and initially starts the localStorage
+            function LoadPage (item) {
+                // The initial display of items
+                DisplayItems();
+            }
+
+            // This function retrievs the items from localStorage and displays them
+            function DisplayItems () {
+                const pswdList = document.getElementById('pswd-list');
+                pswdList.innerHTML = "";
+
+                const thePswds = JSON.parse(localStorage.getItem('ThePswds')) || [];
+
+                for (var i = 0; i < thePswds.length; i++) {
+                    const pswds = thePswds[i];
+                    const crntItem = document.createElement('li');
+                    crntItem.classList.add('pswd-info');
+                    crntItem.innerHTML = `
+                        <div class='wrapper'>
+                            <b>Location: </b> <span class='location-info'>${pswds.location}</span><br>
+                            <b>Username: </b> <span class='username-info'>${pswds.username}</span><br>
+                            <b>Password: </b> <span class='password-info'>${pswds.password}</span><br>
+                            <input type='button' value='Delete' onclick='DeletePswd(${i});'>
+                        </div>
+                    `;
+                    pswdList.appendChild(crntItem);
+                };
+            }
+
+            // This function adds a new password to the list of passwords
+            function AddPswd () {
+                const location = document.getElementById('the-location').value;
+                const username = document.getElementById('the-user-name').value;
+                const password = document.getElementById('the-pswd').value;
+                const thePswds = JSON.parse(localStorage.getItem('ThePswds')) || [];
+                
+                if (location != '' && username != '' && password != '') {
+                    thePswds.push({location, username, password});
+                    localStorage.setItem('ThePswds', JSON.stringify(thePswds));
+                }
+                if ( location == '' || username == '' || password == '') {alert('Please fill out the required fields.');}
+
+                // Reset the form fields
+                document.getElementById('the-location').value = "";
+                document.getElementById('the-user-name').value = "";
+                document.getElementById('the-pswd').value = "";
+                document.getElementById('pswd-range').value = 30;
+                document.getElementById('pswd-length').textContent = '30';
+
+                DisplayItems();
+            }
+
+            // This function changes the text to show you how long your password is
+            function PswdLength (y) {
+                y = document.getElementById('pswd-range').value;
+                document.getElementById('pswd-length').textContent = y;
+            }
+
+            // This function generates a random password
+            function GenerateRandom () {
+                const letters = ["A", "a", "B", "b", "C", "c", "D", "d", "E", "e", "F", "f", "G", "g", "H", "h", "I", "i", "J", "j", "K", "k", "L", "l", "M", "m", "N", "n", "O", "o", "P", "p", "Q", "q", "R", "r", "S", "s", "T", "t", "U", "u", "V", "v", "W", "w", "X", "x", "Y", "y", "Z", "z"];
+                const numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+                const char =  ["~", "`", "!", "@", "#", "$" ,"%" ,"^", "&", "*", "'", "(", ")", "_", "-", "+", "=", "{", "[", "}", "]", "|", ":", ";", "'", "<", ",", ".", "?", "/"];
+                const pswdRange = document.getElementById('pswd-range').value;
+                var crntPswd = "";
+
+                for (var i = 0; i < pswdRange; i++) {
+                    var num = Math.floor(Math.random() * 3);
+                    if (num == 0) {crntPswd += letters[Math.floor(Math.random() * letters.length)];}
+                    if (num == 1) {crntPswd += numbers[Math.floor(Math.random() * numbers.length)];}
+                    if (num == 2) {crntPswd += char[Math.floor(Math.random() * char.length)];}
+                }
+
+                document.getElementById('the-pswd').value = crntPswd;
+            }
+
+            // This function deletes passwords
+            function DeletePswd (index) {
+                let text = "Are you sure you want to contine?";
+                if (confirm(text) == true) {
+                    const thePswds = JSON.parse(localStorage.getItem('ThePswds')) || [];
+                    thePswds.splice(index, 1);
+                    localStorage.setItem('ThePswds', JSON.stringify(thePswds));
+                    DisplayItems();
+                }
+            }
+
+            // This function searchs through the passwords
+            function Search (item) {
+                item = document.getElementById('search').value;
+                item = item.toUpperCase();
+                const pswdList = document.getElementsByClassName('pswd-info');
+                const locationInfo = document.getElementsByClassName('location-info');
+
+                for (var i = 0; i < pswdList.length; i++) {
+                    if (locationInfo[i].textContent.toUpperCase().indexOf(item) > -1) {pswdList[i].style.display = "";}
+                    else {pswdList[i].style.display = "none";}
+                }
+            }
+        </script>
+    </body>
+</html>
