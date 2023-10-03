@@ -5,4 +5,4 @@ Just over over the "Create Password" button, it will have a little drop down men
 
 * Just for clarification, the location input in the drop down, is the location for the username and password. Like if you were keeping a password for a gmail account the location could be "Gmail", if you were keeping a password for a github account the location could be "GitHub".
 
-* Also the random button generates a random password of whatever lengtb you have set. 
+* Also the random button generates a random password of whatever length you have set. 
